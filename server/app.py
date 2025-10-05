@@ -14,13 +14,14 @@ migrate = Migrate(app, db)
 
 db.init_app(app)
 
-@app.route('/messages', methods=['GET', 'POST'])
-def messages():
-    if request.method == 'GET':
-        messages = db.session.query(Message).all()
-        return jsonify([message.to_dict() for message in messages]), 200
+@app.route('/messages', methods=['GET'])
+def get_messages():
+    messages = db.session.query(Message).all()
+    return jsonify([message.to_dict() for message in messages]), 200
 
-    elif request.method == 'POST':
+@app.route('/messages', methods=['POST'])
+def create_message():
+    if request.method == 'POST':
         data = request.get_json()
         new_message = Message(
             body=data.get('body'),
@@ -30,14 +31,14 @@ def messages():
         db.session.commit()
         return jsonify(new_message.to_dict()), 201
     
-@app.route('/messages/<int:id>', methods=['PATCH', 'DELETE'])
+@app.route('/messages/<int:id>', methods=['PATCH'])
 def messages_by_id(id):
     message = db.session.get(Message, id)
 
     if not message:
         return jsonify({"error": "Message not found"}), 404
     
-    if request.method == 'PATCH':
+    elif request.method == 'PATCH':
         data = request.get_json()
         if 'body' in data:
             message.body = data['body']
@@ -45,6 +46,12 @@ def messages_by_id(id):
             message.username = data['username']
         db.session.commit()
         return jsonify(message.to_dict()), 200
+    
+@app.route('/messages/<int:id>', methods=['DELETE'])
+def delete_message(id):
+    message = db.session.get(Message, id)
+    if not message:
+        return make_response('message not found', 404)
     
     elif request.method == 'DELETE':
         db.session.delete(message)
