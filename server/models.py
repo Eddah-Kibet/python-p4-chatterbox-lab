@@ -1,3 +1,4 @@
+# server/models.py
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from datetime import datetime
@@ -15,8 +16,8 @@ class Message(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String, nullable=False)
     username = db.Column(db.String, nullable=False)
-    created_at = db.Column(db.DateTime, default = datetime.now())
-    updated_at = db.Column(db.DateTime, default = datetime.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def to_dict(self):
         return {
@@ -26,3 +27,25 @@ class Message(db.Model, SerializerMixin):
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
+
+    def __repr__(self):
+        return f'<Message {self.id}, {self.username}, {self.created_at}>'
+
+class Earthquake(db.Model, SerializerMixin):
+    __tablename__ = 'earthquakes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    magnitude = db.Column(db.Float, nullable=False)
+    location = db.Column(db.String, nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "magnitude": self.magnitude,
+            "location": self.location,
+            "year": self.year
+        }
+
+    def __repr__(self):
+        return f'<Earthquake {self.id}, {self.location}, {self.year}>'
